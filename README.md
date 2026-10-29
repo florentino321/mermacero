@@ -2,6 +2,17 @@
 
 Prototipo académico de una red de rescate alimentario para mercados y comedores comunitarios. Alineado con la línea de sistemas agroalimentarios resilientes del [MIT Solve Global Climate Challenge 2027](https://solve.mit.edu/challenges/2027-global-climate-challenge). No es una inscripción enviada ni un proyecto afiliado al MIT.
 
+## Entrega publicada
+
+- Aplicación: [https://mermacero.onrender.com](https://mermacero.onrender.com).
+- Código: [florentino321/mermacero](https://github.com/florentino321/mermacero).
+- Comprobación pública: [api/health](https://mermacero.onrender.com/api/health), respuesta esperada `{"ok":true,"storage":"mongodb"}`.
+- Base de datos: `mermacero`, en un proyecto y clúster Atlas independientes llamados MermaCero.
+
+Conexión real verificada el 29 de octubre de 2026: ambos endpoints públicos `/api/health` y `/api/data` respondieron HTTP 200 con almacenamiento `mongodb`. Las contraseñas se configuran exclusivamente en Render; no se incluyen en este repositorio ni en el ZIP.
+
+Para presentar con datos, ingresa como coordinador con tu clave `ADMIN_PASSWORD` y usa «Sobre el proyecto → Cargar registros ficticios de ejemplo». Los ejemplos se marcan como ficticios. El primer despliegue inició con la base vacía.
+
 ## Idea para presentar
 
 **Problema:** coordinar el destino de excedentes perecibles antes del plazo de recojo declarado, considerando las limitaciones del receptor.
@@ -150,7 +161,7 @@ Se prueban filtros logísticos, vencimiento, validación, conteo de kilos, prote
 
 Archivos clave: `src/domain.js` (algoritmo), `src/store.js` (MongoDB y demo explícita), `src/app.js` (API), `public/` (interfaz), `render.yaml` (despliegue). El proyecto usa Node/Express y JavaScript sin compilación del frontend para facilitar su explicación.
 
-Verificación local realizada: 6 pruebas automáticas aprobadas; flujo de navegador de ingreso, publicación, recomendación, reserva y recepción aprobado; comprobación visual a 1440, 768 y 390 px, sin desbordamiento horizontal de la página. El inspector de diseño terminó con 0 fallos y 0 advertencias. MongoDB Atlas y Render aún requieren conexión y verificación en las cuentas del propietario.
+Verificación local realizada: 7 pruebas automáticas aprobadas; flujo de navegador de ingreso, publicación, recomendación, reserva y recepción aprobado; comprobación visual a 1440, 768 y 390 px, sin desbordamiento horizontal de la página. El inspector de diseño terminó con 0 fallos y 0 advertencias. Conexión de Render a MongoDB Atlas verificada en los endpoints públicos descritos al inicio.
 
 ## Diseño
 
