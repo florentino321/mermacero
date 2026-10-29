@@ -1,0 +1,24 @@
+{
+  "name": "mermacero",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Prototipo académico de coordinación de rescate alimentario",
+  "engines": {
+    "node": ">=22 <26"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "demo": "node --env-file=.env.demo src/server.js",
+    "test": "node --test",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
+    "mongodb": "^7.7.0"
+  }
+}
