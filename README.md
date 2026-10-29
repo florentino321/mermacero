@@ -13,6 +13,10 @@ Conexión real verificada el 29 de octubre de 2026: ambos endpoints públicos `/
 
 Para presentar con datos, ingresa como coordinador con tu clave `ADMIN_PASSWORD` y usa «Sobre el proyecto → Cargar registros ficticios de ejemplo». Los ejemplos se marcan como ficticios. El primer despliegue inició con la base vacía.
 
+Prueba posterior en la web publicada: se cargaron 5 organizaciones y 4 lotes ficticios. «Pan del día» (12 kg) se reservó para Comedor Buen Mañana y se confirmó como entrega de demostración. El historial `available → reserved → delivered` se recuperó desde una consulta independiente y el balance se conservó al recargar: 50 kg disponibles, 0 reservados y 12 entregados ficticiamente. No representan donaciones reales.
+
+Antes de exponer, crea un lote nuevo con plazo futuro o edita los lotes disponibles de ejemplo: los plazos sí vencen. Abre la web con anticipación porque el plan gratuito de Render puede tardar en despertar tras inactividad.
+
 ## Idea para presentar
 
 **Problema:** coordinar el destino de excedentes perecibles antes del plazo de recojo declarado, considerando las limitaciones del receptor.
