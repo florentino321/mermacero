@@ -29,8 +29,8 @@ Abre [http://localhost:3000](http://localhost:3000). Clave de coordinación de e
 
 1. Crea un clúster en MongoDB Atlas y un usuario de base de datos con permisos de lectura/escritura solo en la base `mermacero`.
 2. En Network Access, autoriza tu IP para trabajar desde tu computadora.
-3. Copia `.env.example` a `.env` y completa `MONGODB_URI` y `ADMIN_PASSWORD`. Usa una contraseña del proyecto de al menos 12 caracteres.
-4. El URI debe ser el de **Drivers / Node.js**. Reemplaza usuario, clave y host; codifica caracteres especiales de la contraseña en formato URL. No compartas ese URI ni lo subas a GitHub.
+3. Copia `.env.example` a `.env` y completa `MONGODB_URI`, `MONGODB_PASSWORD` y `ADMIN_PASSWORD`. Usa una contraseña del proyecto de al menos 12 caracteres.
+4. El URI debe ser el de **Drivers / Node.js**. Reemplaza usuario y host, conserva `<db_password>` y escribe la contraseña original en `MONGODB_PASSWORD`: el servidor la codifica automáticamente. También se admite un URI completo con la contraseña ya codificada, sin usar la variable separada. No compartas secretos ni los subas a GitHub.
 5. Mantén `DEMO_MODE=false`. Ejecuta:
 
 ```powershell
@@ -60,10 +60,11 @@ Este repositorio ya incluye `render.yaml`. Se debe conectar una cuenta real de R
 | `DEMO_MODE` | `false` |
 | `MONGODB_DB` | `mermacero` |
 | `MONGODB_URI` | Tu URI privado de MongoDB Atlas |
+| `MONGODB_PASSWORD` | Contraseña de MongoDB sin codificar, si el URI contiene `<db_password>` |
 | `ADMIN_PASSWORD` | Tu clave privada de coordinación, mínimo 12 caracteres |
 
 4. En Render consulta los rangos de IP de salida de tu servicio (Connect / Outbound, según el panel) y agrégalos en la lista de acceso de Atlas. Autoriza todos los rangos indicados para que el despliegue siga funcionando si cambia la IP dentro de ellos.
-5. Despliega. Como alternativa, crea un Blueprint desde este repositorio para usar `render.yaml`; introduce los dos secretos cuando Render los solicite.
+5. Despliega. Como alternativa, crea un Blueprint desde este repositorio para usar `render.yaml`; introduce la conexión y las contraseñas cuando Render las solicite.
 6. Abre `https://TU-SERVICIO.onrender.com/api/health`. Debe responder `{"ok":true,"storage":"mongodb"}`.
 7. Ingresa al sitio, registra un lote, recarga y comprueba que persiste. Reinicia el servicio y verifica de nuevo. En Atlas consulta `mermacero.organizations` y `mermacero.lots` para demostrar la persistencia.
 

@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { sampleData } from './sample.js';
+import { mongoUri } from './config.js';
 
 export async function connectStore(env = process.env) {
   if (env.DEMO_MODE === 'true') {
@@ -19,8 +20,7 @@ export async function connectStore(env = process.env) {
       seed: async () => 0, ping: async () => true, close: async () => {}
     };
   }
-  if (!env.MONGODB_URI) throw new Error('Falta MONGODB_URI. Para una prueba local sin MongoDB ejecuta npm run demo.');
-  const client = new MongoClient(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
+  const client = new MongoClient(mongoUri(env), { serverSelectionTimeoutMS: 10000 });
   try {
     await client.connect();
     const db = client.db(env.MONGODB_DB || 'mermacero');
