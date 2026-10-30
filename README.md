@@ -1,172 +1,77 @@
-# MermaCero
+# MermaCero — comida con un nuevo destino
 
-Prototipo académico de una red de rescate alimentario para mercados y comedores comunitarios. Alineado con la línea de sistemas agroalimentarios resilientes del [MIT Solve Global Climate Challenge 2027](https://solve.mit.edu/challenges/2027-global-climate-challenge). No es una inscripción enviada ni un proyecto afiliado al MIT.
+Prototipo académico para registrar comida preparada excedente de restaurantes, comedores y eventos, coordinar su recojo por organizaciones sociales y registrar su distribución a familias. Los residuos separados tienen una ruta distinta hacia gestores de compostaje o biodigestión.
 
-## Entrega publicada
+Aplicación: https://mermacero.onrender.com · Código: https://github.com/florentino321/mermacero
 
-- Aplicación: [https://mermacero.onrender.com](https://mermacero.onrender.com).
-- Código: [florentino321/mermacero](https://github.com/florentino321/mermacero).
-- Comprobación pública: [api/health](https://mermacero.onrender.com/api/health), respuesta esperada `{"ok":true,"storage":"mongodb"}`.
-- Base de datos: `mermacero`, en un proyecto y clúster Atlas independientes llamados MermaCero.
+## Propuesta y demostración
 
-Conexión real verificada el 29 de octubre de 2026: ambos endpoints públicos `/api/health` y `/api/data` respondieron HTTP 200 con almacenamiento `mongodb`. Las contraseñas se configuran exclusivamente en Render; no se incluyen en este repositorio ni en el ZIP.
+1. El donante registra alimento, kilos, porciones, preparación, ingredientes y alérgenos, conservación en frío o caliente y plazo de recojo. Declara aptitud y conservación adecuada.
+2. El sistema recomienda organizaciones sociales compatibles por categoría, capacidad por lote, radio, conservación y margen de traslado.
+3. El coordinador reserva; el receptor confirma recepción y revisión de conservación e información alimentaria.
+4. La organización declara porciones distribuidas y familias atendidas en esa entrega.
+5. Los residuos se ofrecen solo a gestores que admiten el método declarado. Un lote sin entregar puede derivarse explícitamente a orgánicos y no puede volver a donación.
 
-Para presentar con datos, ingresa como coordinador con tu clave `ADMIN_PASSWORD` y usa «Sobre el proyecto → Cargar registros ficticios de ejemplo». Los ejemplos se marcan como ficticios. El primer despliegue inició con la base vacía.
+Ejemplo de exposición: registra 12 kg y 40 porciones de arroz con pollo, reserva, confirma recepción y declara 40 porciones para 10 familias como prueba ficticia. Después muestra un lote para compostaje. Recarga y consulta los documentos en Atlas. Los ejemplos y las cifras no representan donaciones reales.
 
-Prueba posterior en la web publicada: se cargaron 5 organizaciones y 4 lotes ficticios. «Pan del día» (12 kg) se reservó para Comedor Buen Mañana y se confirmó como entrega de demostración. El historial `available → reserved → delivered` se recuperó desde una consulta independiente y el balance se conservó al recargar: 50 kg disponibles, 0 reservados y 12 entregados ficticiamente. No representan donaciones reales.
+No toda comida sobrante es apta para donar. La aplicación **no determina inocuidad ni vida útil**: las declaraciones no sustituyen protocolos sanitarios, control de temperatura ni revisión por responsables capacitados. Las 24 horas máximas para programar recojo de comida preparada son un límite logístico, no una garantía sanitaria. La preparación puede registrarse hasta 7 días atrás como validación de formato; esto no implica aptitud.
 
-Antes de exponer, crea un lote nuevo con plazo futuro o edita los lotes disponibles de ejemplo: los plazos sí vencen. Abre la web con anticipación porque el plan gratuito de Render puede tardar en despertar tras inactividad.
+El beneficio ambiental y social es una hipótesis de piloto. No se han medido emisiones evitadas, mejoras de salud ni impacto real. El diferencial propuesto combina dos destinos separados, compatibilidad explicable y trazabilidad; no se afirma originalidad mundial. No es una inscripción enviada ni una afiliación a MIT Solve.
 
-## Idea para presentar
+## Ejecutar y configurar
 
-**Problema:** coordinar el destino de excedentes perecibles antes del plazo de recojo declarado, considerando las limitaciones del receptor.
+Requiere Node.js 22 o 24. Ejecuta `npm ci` y `npm run demo`; abre http://localhost:3000 y usa `mermacero-demo`. **La demo usa memoria temporal, no MongoDB**. Reiniciar pierde cambios; está bloqueada en producción.
 
-**Solución:** publicar un lote y recomendar comedores que puedan recogerlo por categoría, capacidad, distancia, refrigeración y plazo. El coordinador ve por qué se recomienda cada destino, reserva el lote y registra la entrega.
+Para MongoDB real, copia `.env.example` a `.env`. Completa `MONGODB_URI`, `MONGODB_PASSWORD`, `MONGODB_DB=mermacero` y una `ADMIN_PASSWORD` de al menos 12 caracteres. Mantén `DEMO_MODE=false`. El URI de Drivers / Node.js puede conservar `<db_password>`; escribe la contraseña original en `MONGODB_PASSWORD` y el servidor la codifica. También admite un URI completo con contraseña ya codificada. No subas secretos a GitHub. Autoriza tu IP en Atlas y usa un usuario readWrite limitado a mermacero. Ejecuta `npm start`. Si MongoDB falla, el servidor no cambia silenciosamente a memoria.
 
-**Diferencial propuesto:** unir compatibilidad logística con prioridad explicable en una red local. No se afirma originalidad mundial: la novedad debe contrastarse con soluciones existentes y entrevistas. No usa IA, sensores ni predicciones de inocuidad.
+Para ejemplos, ingresa como coordinador → Sobre el proyecto → cargar ejemplos. También admite `SEED_DEMO_DATA=true` y `npm run seed`. Solo inserta IDs faltantes; no borra, sobrescribe ni renueva fechas existentes. Los nuevos ejemplos son dos donantes, una organización social, un gestor y cuatro lotes de comida preparada/orgánicos. Los registros antiguos se conservan e identifican en la interfaz. Crea nuevos registros o edita plazos antes de exponer.
 
-**Beneficiarios propuestos:** mercados, comedores comunitarios y equipos municipales. Hipótesis: reducir coordinación manual y aumentar entregas oportunas. Hace falta un piloto para demostrarlo.
+Render: Build `npm ci`, Start `npm start`, Health Check `/api/health`, Node 24, `NODE_ENV=production`, `DEMO_MODE=false`, `MONGODB_DB=mermacero`. Las variables privadas son `MONGODB_URI`, `MONGODB_PASSWORD` y `ADMIN_PASSWORD`. `render.yaml` permite recrear la configuración. Autoriza en Atlas los rangos de salida indicados por Render. La comprobación `/api/health` debe responder `{"ok":true,"storage":"mongodb"}`. El servicio gratuito puede necesitar tiempo para despertar.
 
-## Inicio rápido: demostración local
+La conexión real con MongoDB y reserva/recepción de la versión inicial se verificaron el 29/10/2026 con datos ficticios. Esa prueba histórica no demuestra resultados del nuevo enfoque ni donaciones reales. Las pruebas automáticas usan memoria; el despliegue se verifica aparte.
 
-Requiere Node.js 22 o 24 y npm.
+## Arquitectura y MongoDB
 
-```powershell
-npm ci
-npm run demo
-```
+Navegador HTML/CSS/JavaScript → API Node.js/Express en Render → MongoDB Atlas. Consulta pública y escrituras con clave de coordinación. Es una sola coordinación, sin cuentas independientes por organización.
 
-Abre [http://localhost:3000](http://localhost:3000). Clave de coordinación de esta demo: `mermacero-demo`.
+**organizations:** id, name, district, lat, lng, type, createdAt, isSample. Por compatibilidad, `market` = donante, `kitchen` = organización social y `recycler` = gestor. Donantes añaden donorKind; receptores categories, capacityKg y maxDistanceKm. Organizaciones sociales declaran refrigeration y hotHolding; gestores recoveryMethods.
 
-**Este modo usa memoria temporal, NO MongoDB.** Incluye datos ficticios y los cambios se pierden al reiniciar. Está bloqueado en producción para evitar confundirlo con la entrega requerida.
+**lots:** id, title, category, kg, marketId (donante), route (donation/organic), pickupBy, status, notes, createdAt, isSample, modelVersion, history. Donaciones añaden foodSafetyConfirmed y allergens; comida preparada preparedAt, preservation y portions. Orgánicos recoveryMethod. Reserva guarda kitchenId (receptor de cualquier tipo) y reservation; recepción deliveredAt e inspectionConfirmed; distribución `{families,portions,at}`.
 
-## Ejecutar con MongoDB real
+Estados: `available → reserved → delivered → distributed` (último solo en donación). Liberar: `reserved → available`. `expired` se deriva cuando pasó el plazo y el lote sigue pendiente; impide reservar o recibir. No convierte automáticamente en residuos ni determina seguridad alimentaria.
 
-1. Crea un clúster en MongoDB Atlas y un usuario de base de datos con permisos de lectura/escritura solo en la base `mermacero`.
-2. En Network Access, autoriza tu IP para trabajar desde tu computadora.
-3. Copia `.env.example` a `.env` y completa `MONGODB_URI`, `MONGODB_PASSWORD` y `ADMIN_PASSWORD`. Usa una contraseña del proyecto de al menos 12 caracteres.
-4. El URI debe ser el de **Drivers / Node.js**. Reemplaza usuario y host, conserva `<db_password>` y escribe la contraseña original en `MONGODB_PASSWORD`: el servidor la codifica automáticamente. También se admite un URI completo con la contraseña ya codificada, sin usar la variable separada. No compartas secretos ni los subas a GitHub.
-5. Mantén `DEMO_MODE=false`. Ejecuta:
+Índices: id único en ambas colecciones y `{status:1,pickupBy:1}` en lots. Referencias lógicas validadas por API. Reserva con findOneAndUpdate condicional por ID, estado y plazo: dos solicitudes concurrentes no reservan el mismo lote. Estado e historial se guardan juntos. La distribución cambia de estado condicionalmente y se registra una sola vez.
 
-```powershell
-npm ci
-npm start
-```
+## Recomendaciones e indicadores
 
-La aplicación crea los índices y las colecciones al conectar. Si MongoDB no conecta, el servidor no arranca; no cambia silenciosamente a memoria.
-
-Para agregar ejemplos, ingresa como coordinador → Sobre el proyecto → Cargar registros ficticios de ejemplo. La carga inserta solo IDs inexistentes; no borra ni sobrescribe. También puedes poner `SEED_DEMO_DATA=true` en tu `.env` y ejecutar `npm run seed`. Los plazos se generan al insertar por primera vez; recargar no renueva fechas de ejemplos existentes. Para una entrega limpia, crea tus propios registros en una base nueva.
-
-## Publicar en Render
-
-Este repositorio ya incluye `render.yaml`. Se debe conectar una cuenta real de Render y un repositorio GitHub/GitLab accesible; este archivo no publica por sí solo.
-
-1. Sube los archivos del proyecto a un repositorio. Excluye `.env`, `node_modules` y cualquier credencial. Incluye `package-lock.json`.
-2. En Render: **New → Web Service**, conecta el repositorio y elige Node.
-3. Configura:
-
-| Campo | Valor |
-|---|---|
-| Build Command | `npm ci` |
-| Start Command | `npm start` |
-| Health Check Path | `/api/health` |
-| `NODE_VERSION` | `24` |
-| `NODE_ENV` | `production` |
-| `DEMO_MODE` | `false` |
-| `MONGODB_DB` | `mermacero` |
-| `MONGODB_URI` | Tu URI privado de MongoDB Atlas |
-| `MONGODB_PASSWORD` | Contraseña de MongoDB sin codificar, si el URI contiene `<db_password>` |
-| `ADMIN_PASSWORD` | Tu clave privada de coordinación, mínimo 12 caracteres |
-
-4. En Render consulta los rangos de IP de salida de tu servicio (Connect / Outbound, según el panel) y agrégalos en la lista de acceso de Atlas. Autoriza todos los rangos indicados para que el despliegue siga funcionando si cambia la IP dentro de ellos.
-5. Despliega. Como alternativa, crea un Blueprint desde este repositorio para usar `render.yaml`; introduce la conexión y las contraseñas cuando Render las solicite.
-6. Abre `https://TU-SERVICIO.onrender.com/api/health`. Debe responder `{"ok":true,"storage":"mongodb"}`.
-7. Ingresa al sitio, registra un lote, recarga y comprueba que persiste. Reinicia el servicio y verifica de nuevo. En Atlas consulta `mermacero.organizations` y `mermacero.lots` para demostrar la persistencia.
-
-Consulta disponibilidad y condiciones del plan en tu cuenta antes de crear el servicio. Si el servicio entra en reposo, ábrelo antes de la exposición y espera a que termine de iniciar.
-
-Referencias oficiales: [Node en Render](https://render.com/docs/deploy-node-express-app), [variables y secretos](https://render.com/docs/configure-environment-variables), [lista de acceso de Atlas](https://www.mongodb.com/docs/atlas/security/ip-access-list/).
-
-## Modelo de datos
-
-### `organizations`
-
-`id` (UUID/string único), `name`, `type` (`market` o `kitchen`), `district`, `lat`, `lng`, `createdAt`, `isSample`.
-
-Un comedor añade `categories`, `capacityKg` (por recojo), `maxDistanceKm`, `refrigeration`.
-
-### `lots`
-
-`id`, `title`, `category`, `kg`, `marketId` (referencia lógica a una organización), `pickupBy` (fecha ISO UTC), `refrigerated`, `notes`, `status`, `createdAt`, `isSample`, `history` (arreglo embebido).
-
-Al reservar: `kitchenId` y `reservation` (instantánea explicable de la recomendación). Al entregar: `deliveredAt`.
-
-Estados persistidos: `available → reserved → delivered`; `reserved → available` permite liberar. La API deriva `expired` si pasó el plazo y el lote aún está disponible o reservado. Los lotes entregados conservan su estado y su peso.
-
-Índices: `id` único en ambas colecciones y `{status:1,pickupBy:1}` en lotes. La referencia lógica entre colecciones se valida en la API; MongoDB no impone una clave foránea.
-
-Reserva atómica: `findOneAndUpdate({id,status:'available',pickupBy:{$gt:ahora}}, ...)`. Si otra solicitud ya lo reservó, se devuelve HTTP 409. El historial se agrega en la misma escritura que cambia el estado. No requiere transacciones entre colecciones.
-
-La capacidad se interpreta **por lote**, no como cuota diaria. No se fraccionan lotes ni se descuentan capacidades de otros rescates. Esta simplificación debe explicarse en clase.
-
-## Algoritmo
-
-Filtros: categoría aceptada, lote completo dentro de capacidad, distancia dentro del radio, refrigeración compatible y margen de tiempo suficiente.
+Primero filtra categoría, capacidad para el lote completo, radio, plazo y conservación. Donación va a organizaciones sociales; orgánicos a gestores compatibles.
 
 `P = 100 × (0.50 × U + 0.30 × C + 0.20 × A)`
 
-- `U = max(0, 1 - horasRestantes / 24)`.
-- `C = max(0, 1 - distanciaKm / radioKm)`.
-- `A = kgDelLote / capacidadKg` (los filtros garantizan A ≤ 1).
-- Distancia Haversine en línea recta. Tiempo ilustrativo: `ceil(distancia / 15 × 60 + 30)` minutos.
-- Orden descendente por puntaje, después distancia y después ID.
+- U = max(0, 1 - horasRestantes / 24).
+- C = max(0, 1 - distanciaKm / radioKm).
+- A = kgDelLote / capacidadKg.
+- Haversine en línea recta; tiempo ilustrativo ceil(distancia / 15 × 60 + 30) minutos.
 
-Para el mismo lote, la urgencia es igual en todos los destinos; cercanía y ajuste diferencian a los comedores. Se muestra el puntaje redondeado como índice de prioridad, no porcentaje de éxito. Los pesos y la velocidad son supuestos didácticos; requieren calibración en un piloto.
+Heurística didáctica sin IA, sensores ni tráfico real. No es probabilidad de éxito ni evaluación sanitaria. La capacidad es por lote, no cuota diaria; no fracciona lotes. Pesos y tiempos requieren piloto.
 
-El plazo lo declara el mercado; el sistema no calcula deterioro ni certifica inocuidad. El transporte refrigerado y las condiciones reales de manipulación requieren verificación fuera de este prototipo.
+Indicadores: kilos pendientes, recibidos para donar, recibidos por gestores y distribución declarada. Recibir residuos **no demuestra tratamiento final**. Atenciones a familias se suman por entrega: pueden repetirse familias. No almacena sus identidades. Kilos recibidos se cuentan una sola vez aunque el lote pase a distribuido.
 
-## API
+## API y pruebas
 
-Lectura pública: `GET /api/health`, `GET /api/data`.
+GET /api/health y /api/data son públicos. POST /api/login recibe `{password}` y devuelve token; escrituras usan Authorization: Bearer TOKEN. Sesiones en memoria por 8 horas; reiniciar invalida sesión, pero conserva MongoDB. Tokens en sessionStorage; sin JavaScript externo.
 
-`POST /api/login` recibe `{password}` y devuelve un token temporal. Las escrituras siguientes usan `Authorization: Bearer TOKEN`. Los tokens caducan a las 8 horas, se guardan en memoria del servidor y se invalidan al reiniciar; los datos de MongoDB permanecen.
+- POST /api/organizations: registrar participante.
+- POST /api/lots; PUT o DELETE /api/lots/:id: crear, editar o eliminar lote sin reserva.
+- POST /api/lots/:id/reserve: `{kitchenId}` compatible.
+- POST /api/lots/:id/release: liberar.
+- POST /api/lots/:id/deliver: `{receiptConfirmed:true,inspectionConfirmed:true}` en donación; orgánicos solo requiere recepción.
+- POST /api/lots/:id/distribute: `{portions,families}` tras recibir donación.
+- POST /api/lots/:id/divert: `{recoveryMethod,pickupBy}` deriva a orgánicos sin vuelta.
+- POST /api/seed: insertar ejemplos faltantes; POST /api/logout: invalidar token.
 
-| Método | Ruta | Operación |
-|---|---|---|
-| POST | `/api/organizations` | Registrar mercado o comedor |
-| POST | `/api/lots` | Crear lote |
-| PUT | `/api/lots/:id` | Editar lote sin reserva |
-| DELETE | `/api/lots/:id` | Eliminar lote sin reserva e historial |
-| POST | `/api/lots/:id/reserve` | Reservar con `{kitchenId}` compatible |
-| POST | `/api/lots/:id/release` | Liberar reserva |
-| POST | `/api/lots/:id/deliver` | Confirmar recepción con `{receiptConfirmed:true}` |
-| POST | `/api/seed` | Insertar ejemplos faltantes |
-| POST | `/api/logout` | Invalidar token |
+`npm test`: ocho pruebas cubren validación, separación de rutas, conservación, filtros, vencimiento, acceso, CRUD, reservas concurrentes, distribución única y métricas. Flujo en navegador local: ingreso, publicación de comida preparada, reserva y recepción. Revisión visual a 1440, 768 y 390 px; inspector: 0 fallos y 0 advertencias.
 
-Prototipo de una sola coordinación, no un sistema con usuarios y roles por organización. La consulta expone nombres y coordenadas: usa datos ficticios o autorizados, sin información personal. No publiques la clave de coordinación en el código. Los tokens se guardan en `sessionStorage` del navegador y el proyecto no carga JavaScript externo.
+Un piloto necesitaría organizaciones verificadas, protocolos sanitarios y de transporte, gestores habilitados, seguimiento de tratamiento final y evaluación de costos e impacto. El registro no certifica permisos. Nombres y coordenadas son públicos: usa datos ficticios o autorizados.
 
-## Guion de demostración (5 minutos)
-
-1. **Problema (40 s):** «Un lote de tomates puede perderse aunque exista un comedor cercano. Falta saber quién puede recibirlo a tiempo».
-2. **Propuesta (40 s):** «MermaCero recomienda destinos compatibles y explica plazo, cercanía y capacidad».
-3. **Demostración (2 min):** ingresar, crear mercado/comedor o usar ejemplos, publicar 10 kg con plazo futuro, ver recomendaciones, reservar, confirmar recepción y comprobar el aumento del indicador entregado.
-4. **Base de datos (1 min):** mostrar en Atlas el lote con `marketId`, `kitchenId`, estado e historial. Recargar el sitio y demostrar persistencia.
-5. **Alcance (40 s):** «Es un prototipo. Un piloto evaluaría entregas oportunas, kilos recibidos y utilidad de las recomendaciones. La reducción neta de emisiones aún no está medida».
-
-Indicadores de piloto propuestos: kilos recibidos confirmados, porcentaje de reservas que terminan en entrega, tiempo entre publicación y recepción y motivos de rescates no completados. No inventes resultados ni beneficiarios reales.
-
-## Pruebas
-
-```powershell
-npm test
-```
-
-Se prueban filtros logísticos, vencimiento, validación, conteo de kilos, protección de escrituras, CRUD y competencia de dos reservas por HTTP usando el adaptador de memoria. Estas pruebas **no certifican conexión a MongoDB Atlas ni despliegue en Render**. La verificación real se hace con el procedimiento de persistencia descrito arriba.
-
-Archivos clave: `src/domain.js` (algoritmo), `src/store.js` (MongoDB y demo explícita), `src/app.js` (API), `public/` (interfaz), `render.yaml` (despliegue). El proyecto usa Node/Express y JavaScript sin compilación del frontend para facilitar su explicación.
-
-Verificación local realizada: 7 pruebas automáticas aprobadas; flujo de navegador de ingreso, publicación, recomendación, reserva y recepción aprobado; comprobación visual a 1440, 768 y 390 px, sin desbordamiento horizontal de la página. El inspector de diseño terminó con 0 fallos y 0 advertencias. Conexión de Render a MongoDB Atlas verificada en los endpoints públicos descritos al inicio.
-
-## Diseño
-
-Dirección Framed sheet, semilla 309955881. Marco verde grisáceo y tipografía IBM Plex Sans. La pregunta principal es «¿qué lote necesita rescate primero?»; las listas priorizadas y los destinos explicados son el elemento propio de la aplicación. No hubo redibujos. Datos ficticios iniciales: Mercado Huerta Sur, Mercado La Cosecha, comedores Semilla, Buen Mañana y Raíces, y cuatro lotes definidos en `src/sample.js`. Reemplázalos si haces un piloto real.
+Referencias: [OMS](https://www.who.int/activities/promoting-safe-food-handling/five-key-to-safer-food), [FAO](https://www.fao.org/platform-food-loss-waste/food-waste/food-waste-reduction/en), [reto MIT Solve indicado](https://solve.mit.edu/challenges/2027-global-climate-challenge). Orientan la propuesta; no avalan el prototipo.

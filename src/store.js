@@ -1,11 +1,11 @@
 import { MongoClient } from 'mongodb';
-import { sampleData } from './sample.js';
+import { preparedFoodData } from './sample.js';
 import { mongoUri } from './config.js';
 
 export async function connectStore(env = process.env) {
   if (env.DEMO_MODE === 'true') {
     if (env.NODE_ENV === 'production') throw new Error('DEMO_MODE no está permitido en producción. Configura MongoDB.');
-    const data = sampleData();
+    const data = preparedFoodData();
     return {
       mode: 'demo', list: async name => structuredClone(data[name]),
       get: async (name, id) => structuredClone(data[name].find(o => o.id === id)),
@@ -38,7 +38,7 @@ export async function connectStore(env = process.env) {
       ),
       remove: async id => (await db.collection('lots').deleteOne({ id, status: 'available' })).deletedCount === 1,
       seed: async () => {
-        const sample = sampleData(); let added = 0;
+        const sample = preparedFoodData(); let added = 0;
         for (const name of ['organizations', 'lots']) for (const doc of sample[name]) {
           const result = await db.collection(name).updateOne({ id: doc.id }, { $setOnInsert: doc }, { upsert: true }); added += result.upsertedCount;
         }

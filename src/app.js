@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { randomUUID, randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { AppError, categories, organizationInput, lotInput, recommendations, effectiveStatus, summary } from './domain.js';
+import { AppError, categories, organizationInput, lotInput, recommendations, effectiveStatus, summary, routeOf, distributionInput, recoveryMethods } from './domain.js';
 
 export function createApp(store, password) {
   if (!password || password.length < 12) throw new Error('ADMIN_PASSWORD debe tener al menos 12 caracteres.');
@@ -41,7 +41,7 @@ export function createApp(store, password) {
   app.get('/api/data', async (_req, res) => {
     const [organizations, lots] = await Promise.all([store.list('organizations'), store.list('lots')]);
     const now = Date.now();
-    res.json({ storage: store.mode, categories, organizations, lots: lots.map(l => ({ ...l, effectiveStatus: effectiveStatus(l, now), recommendations: recommendations(l, organizations, now) })), summary: summary(lots, now), updatedAt: new Date(now).toISOString() });
+    res.json({ storage: store.mode, focus: 'prepared-food', categories, recoveryMethods, organizations, lots: lots.map(l => ({ ...l, route: routeOf(l), effectiveStatus: effectiveStatus(l, now), recommendations: recommendations(l, organizations, now) })), summary: summary(lots, now), updatedAt: new Date(now).toISOString() });
   });
   app.post('/api/organizations', requireAdmin, async (req, res) => {
     const org = { ...organizationInput(req.body || {}), id: randomUUID(), createdAt: new Date().toISOString(), isSample: false };
@@ -50,7 +50,7 @@ export function createApp(store, password) {
   async function validatedLot(body) {
     const fields = lotInput(body || {});
     const market = await store.get('organizations', fields.marketId);
-    if (!market || market.type !== 'market') throw new AppError('Elige un mercado registrado.');
+    if (!market || market.type !== 'market') throw new AppError('Elige un donante registrado.');
     return fields;
   }
   app.post('/api/lots', requireAdmin, async (req, res) => {
@@ -59,6 +59,8 @@ export function createApp(store, password) {
     res.status(201).json(await store.insert('lots', { ...fields, id: randomUUID(), status: 'available', createdAt: at, isSample: false, history: [{ status: 'available', at }] }));
   });
   app.put('/api/lots/:id', requireAdmin, async (req, res) => {
+    const original = await findLot(req.params.id);
+    if (routeOf(original) === 'organic' && req.body?.route !== 'organic') throw new AppError('Un lote destinado a residuos orgánicos no puede volver a donación para consumo humano.');
     const fields = await validatedLot(req.body);
     const changed = await store.update(req.params.id, 'available', fields, { action: 'edited', at: new Date().toISOString() });
     if (!changed) throw new AppError('Solo puedes editar lotes disponibles. Actualiza la página.', 409);
@@ -85,10 +87,31 @@ export function createApp(store, password) {
     res.json(lot);
   });
   app.post('/api/lots/:id/deliver', requireAdmin, async (req, res) => {
-    if (req.body?.receiptConfirmed !== true) throw new AppError('Confirma que el comedor recibió el lote.');
+    const original = await findLot(req.params.id);
+    if (req.body?.receiptConfirmed !== true) throw new AppError('Confirma que la organización recibió el lote.');
+    if (routeOf(original) === 'donation' && original.modelVersion >= 2 && req.body?.inspectionConfirmed !== true) throw new AppError('La organización receptora debe confirmar la revisión de conservación e información del alimento.');
     const at = new Date().toISOString();
-    const lot = await store.update(req.params.id, 'reserved', { status: 'delivered', deliveredAt: at }, { status: 'delivered', at }, at);
+    const lot = await store.update(req.params.id, 'reserved', { status: 'delivered', deliveredAt: at, inspectionConfirmed: req.body.inspectionConfirmed === true }, { status: 'delivered', at }, at);
     if (!lot) throw new AppError('El lote no está reservado o venció el plazo. No se registró la entrega.', 409);
+    res.json(lot);
+  });
+  app.post('/api/lots/:id/distribute', requireAdmin, async (req, res) => {
+    const original = await findLot(req.params.id);
+    if (routeOf(original) !== 'donation') throw new AppError('Los residuos orgánicos no se distribuyen para consumo humano.');
+    if (original.status !== 'delivered') throw new AppError('Primero confirma la recepción. La distribución solo se registra una vez.', 409);
+    const distribution = { ...distributionInput(req.body || {}, original), at: new Date().toISOString() };
+    const lot = await store.update(original.id, 'delivered', { status: 'distributed', distribution }, { status: 'distributed', at: distribution.at });
+    if (!lot) throw new AppError('La distribución ya fue registrada. Actualiza la página.', 409);
+    res.json(lot);
+  });
+  app.post('/api/lots/:id/divert', requireAdmin, async (req, res) => {
+    const original = await findLot(req.params.id);
+    if (routeOf(original) !== 'donation' || original.status !== 'available') throw new AppError('Libera primero la reserva. Solo puedes derivar un lote de donación sin entregar.', 409);
+    if (!recoveryMethods.includes(req.body?.recoveryMethod)) throw new AppError('Elige compostaje o biodigestión.');
+    const fields = lotInput({ ...original, ...req.body, title: original.title, category: original.category, marketId: original.marketId, kg: original.kg, route: 'organic' });
+    const at = new Date().toISOString();
+    const lot = await store.update(original.id, 'available', { ...fields, donationPickupBy: original.pickupBy, preservation: null, portions: null, allergens: null }, { action: 'diverted', status: 'available', recoveryMethod: fields.recoveryMethod, at });
+    if (!lot) throw new AppError('El lote cambió de estado. Actualiza la página.', 409);
     res.json(lot);
   });
   app.post('/api/seed', requireAdmin, async (_req, res) => res.json({ inserted: await store.seed() }));
